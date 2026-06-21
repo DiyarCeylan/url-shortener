@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Link Kısaltıcı</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #79c0ff;
+    --green: #3fb950;
+    --orange: #d29922;
+    --radius: 8px;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .container {
+    width: 100%;
+    max-width: 860px;
+    padding: 40px 20px 60px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 15px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .form-row {
+    display: flex;
+    gap: 10px;
+  }
+  .form-row input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .form-row input::placeholder { color: var(--muted); }
+  .form-row input:focus { border-color: var(--accent); }
+  .form-row button {
+    padding: 12px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    white-space: nowrap;
+  }
+  .form-row button:hover { background: var(--accent-hover); }
+  .form-row button:active { transform: scale(.97); }
+  .form-row button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .error-msg {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(248,81,73,.15);
+    border: 1px solid rgba(248,81,73,.4);
+    border-radius: var(--radius);
+    color: #f85149;
+    font-size: 14px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  .loader {
+    display: none;
+    justify-content: center;
+    margin: 40px 0;
+  }
+  .loader.show { display: flex; }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state svg { margin-bottom: 16px; opacity: .5; }
+  .empty-state h3 { font-size: 18px; margin-bottom: 6px; color: var(--text); }
+  .empty-state p { font-size: 14px; }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead { background: var(--surface); }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(88,166,255,.04); }
+
+  .url-cell { max-width: 240px; }
+  .url-display {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .short-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .short-link a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13px;
+  }
+  .short-link a:hover { text-decoration: underline; }
+  .copy-btn {
+    flex-shrink: 0;
+    width: 30px; height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .copy-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(88,166,255,.1);
+  }
+  .copy-btn.copied {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(63,185,80,.1);
+  }
+  .click-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(88,166,255,.1);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .date-cell { color: var(--muted); font-size: 13px; white-space: nowrap; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--green);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all .3s ease;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 640px) {
+    .container { padding: 20px 12px 40px; }
+    header h1 { font-size: 24px; }
+    .form-row { flex-direction: column; }
+    .form-row button { width: 100%; }
+    .card { padding: 16px; }
+    th, td { padding: 10px 12px; }
+    .url-cell { max-width: 120px; }
+    .hide-mobile { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🔗 <span>Link</span> Kısaltıcı</h1>
+    <p>Uzun URL'leri kısaltın, takip edin</p>
+  </header>
+
+  <div class="card">
+    <div class="form-row">
+      <input type="url" id="urlInput" placeholder="https://örnek.com/çok-uzun-bir-link" autofocus>
+      <button id="shortenBtn">Kısalt</button>
+    </div>
+    <div id="errorMsg" class="error-msg"></div>
+  </div>
+
+  <div id="loader" class="loader"><div class="spinner"></div></div>
+
+  <div id="contentArea"></div>
+</div>
+
+<div id="toast" class="toast">Kopyalandı!</div>
+
+<script>
+(function() {
+  const BASE = window.location.origin;
+  const urlInput = document.getElementById('urlInput');
+  const shortenBtn = document.getElementById('shortenBtn');
+  const errorMsg = document.getElementById('errorMsg');
+  const loader = document.getElementById('loader');
+  const contentArea = document.getElementById('contentArea');
+  const toast = document.getElementById('toast');
+
+  let links = [];
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.classList.add('show');
+  }
+
+  function hideError() {
+    errorMsg.classList.remove('show');
+    errorMsg.textContent = '';
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg || 'Kopyalandı!';
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function setLoading(on) {
+    loader.classList.toggle('show', on);
+    shortenBtn.disabled = on;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr + 'Z');
+    const now = new Date();
+    const diff = (now - d) / 1000;
+    if (diff < 60) return 'Az önce';
+    if (diff < 3600) return Math.floor(diff / 60) + ' dk önce';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' sa önce';
+    return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function truncate(str, len) {
+    if (!str) return '';
+    return str.length > len ? str.slice(0, len) + '...' : str;
+  }
+
+  function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.classList.add('copied');
+      setTimeout(() => btn.classList.remove('copied'), 1500);
+      showToast('Kopyalandı!');
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.classList.add('copied');
+      setTimeout(() => btn.classList.remove('copied'), 1500);
+      showToast('Kopyalandı!');
+    });
+  }
+
+  function render() {
+    if (links.length === 0) {
+      contentArea.innerHTML = `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <h3>Henüz link yok</h3>
+          <p>Yukarıdaki forma bir URL yapıştırıp kısaltmaya başlayın.</p>
+        </div>`;
+      return;
+    }
+
+    const rows = links.map(l => {
+      const shortUrl = BASE + '/' + l.code;
+      return `<tr>
+        <td class="url-cell"><span class="url-display" title="${l.url.replace(/"/g, '&quot;')}">${truncate(l.url, 60)}</span></td>
+        <td>
+          <div class="short-link">
+            <a href="${shortUrl}" target="_blank" rel="noopener">${BASE}/${l.code}</a>
+            <button class="copy-btn" data-url="${shortUrl}" title="Kopyala">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </td>
+        <td><span class="click-badge">👁 ${l.clicks ?? 0}</span></td>
+        <td class="date-cell hide-mobile">${formatDate(l.created_at)}</td>
+      </tr>`;
+    }).join('');
+
+    contentArea.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:28px;margin-bottom:4px;">
+        <h2 style="font-size:16px;font-weight:600;">Tüm Linkler</h2>
+        <span style="color:var(--muted);font-size:13px;">${links.length} link</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Orijinal URL</th>
+            <th>Kısaltılmış</th>
+            <th>Tıklanma</th>
+            <th class="hide-mobile">Tarih</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+    contentArea.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => copyToClipboard(btn.dataset.url, btn));
+    });
+  }
+
+  async function fetchLinks() {
+    try {
+      const res = await fetch(BASE + '/api/links');
+      if (!res.ok) throw new Error('Linkler alınamadı');
+      links = await res.json();
+      render();
+    } catch (err) {
+      contentArea.innerHTML = `
+        <div class="card" style="margin-top:20px;text-align:center;color:var(--muted);padding:40px;">
+          <p>Linkler yüklenirken hata oluştu.</p>
+          <button onclick="location.reload()" style="margin-top:12px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Tekrar Dene</button>
+        </div>`;
+    }
+  }
+
+  async function shortenUrl(url) {
+    hideError();
+    setLoading(true);
+    try {
+      const res = await fetch(BASE + '/api/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Bir hata oluştu');
+      links.unshift({ code: data.code, url, clicks: 0, created_at: new Date().toISOString() });
+      render();
+      urlInput.value = '';
+      urlInput.focus();
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  urlInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') shortenBtn.click();
+  });
+
+  shortenBtn.addEventListener('click', () => {
+    const url = urlInput.value.trim();
+    if (!url) {
+      showError('Lütfen bir URL girin.');
+      return;
+    }
+    try {
+      new URL(url);
+    } catch {
+      showError('Geçerli bir URL girin (https://...).');
+      return;
+    }
+    shortenUrl(url);
+  });
+
+  fetchLinks();
+})();
+</script>
+</body>
+</html>
