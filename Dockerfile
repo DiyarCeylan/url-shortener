@@ -12,7 +12,6 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/public ./public
 RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
-VOLUME /app/data
 EXPOSE 3000
 USER appuser
 CMD ["node", "src/server.js"]
