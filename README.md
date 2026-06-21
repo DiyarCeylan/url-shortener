@@ -1,60 +1,60 @@
-# 🔗 Link Kısaltıcı
+# 🔗 URL Shortener
 
-Express.js ve SQLite (sql.js) tabanlı, hafif ve hızlı bir URL kısaltma servisi. Uzun URL'leri kısa kodlara dönüştürür, tıklanma istatistiklerini tutar ve web arayüzü üzerinden yönetim imkânı sunar.
+A lightweight URL shortening service built with Express.js and SQLite (sql.js). Converts long URLs into short codes, tracks click statistics, and provides a web interface for management.
 
-## Özellikler
+## Features
 
-- Uzun URL'leri 7 karakterli benzersiz kodlarla kısaltma
-- Otomatik 301 yönlendirme
-- Tıklanma sayısı takibi
-- Tüm linklerin listelenmesi
-- Koyu temalı, mobil uyumlu web arayüzü
-- Tek tıkla kopyalama
-- SQLite ile kalıcı veri depolama
+- Shorten long URLs with 7-character unique codes
+- Automatic 301 redirects
+- Click tracking
+- List all shortened links
+- Dark-themed, mobile-friendly web UI
+- One-click copy
+- Persistent SQLite storage
 - RESTful API
 
-## Kullanılan Teknolojiler
+## Built With
 
-| Teknoloji  | Açıklama                     |
-| ---------- | ---------------------------- |
-| Node.js    | Çalışma zamanı               |
-| Express.js | Web sunucu çatısı            |
-| SQLite     | Gömülü veritabanı (sql.js)   |
-| sql.js     | SQLite'in JavaScript portu   |
-| Vitest     | Test çatısı                  |
-| Supertest  | HTTP test yardımcısı         |
+| Technology   | Description                   |
+| ------------ | ----------------------------- |
+| Node.js      | Runtime environment           |
+| Express.js   | Web framework                 |
+| SQLite       | Embedded database (sql.js)    |
+| sql.js       | JavaScript port of SQLite     |
+| Vitest       | Test framework                |
+| Supertest    | HTTP test helper              |
 
-## Kurulum
+## Setup
 
 ```bash
-# Bağımlılıkları yükleyin
+# Install dependencies
 npm install
 
-# Uygulamayı başlatın
+# Start the server
 npm start
 ```
 
-Sunucu varsayılan olarak **http://localhost:3000** adresinde çalışır.
+Server runs at **http://localhost:3000** by default.
 
-## Kullanım
+## Usage
 
-Tarayıcınızda `http://localhost:3000` adresine giderek web arayüzünü kullanabilirsiniz. Uzun URL'yi forma yapıştırıp "Kısalt" butonuna tıklayın. Oluşan kısa linki kopyalayıp paylaşabilirsiniz.
+Open `http://localhost:3000` in your browser. Paste a long URL into the input field and click "Shorten". Copy and share the generated short link.
 
-## API Dokümantasyonu
+## API Documentation
 
 ### POST `/api/shorten`
 
-Yeni bir kısa link oluşturur.
+Creates a new short link.
 
-**İstek:**
+**Request:**
 
 ```json
 {
-  "url": "https://ornek.com/cok-uzun-bir-sayfa"
+  "url": "https://example.com/some-long-page"
 }
 ```
 
-**Başarılı yanıt (201):**
+**Success response (201):**
 
 ```json
 {
@@ -63,59 +63,59 @@ Yeni bir kısa link oluşturur.
 }
 ```
 
-**Hata yanıtları:**
+**Error responses:**
 
-| Durum | Açıklama              |
-| ----- | --------------------- |
-| 400   | Geçersiz veya eksik URL |
-| 500   | Sunucu hatası          |
+| Status | Description              |
+| ------ | ------------------------ |
+| 400    | Invalid or missing URL   |
+| 500    | Internal server error    |
 
 ---
 
 ### GET `/:code`
 
-Kısa kodu orijinal URL'ye yönlendirir.
+Redirects a short code to the original URL.
 
-| Durum | Açıklama        |
-| ----- | --------------- |
-| 301   | Başarılı yönlendirme |
-| 404   | Kod bulunamadı  |
+| Status | Description         |
+| ------ | ------------------- |
+| 301    | Successful redirect |
+| 404    | Code not found      |
 
 ---
 
 ### GET `/api/stats/:code`
 
-Kısa linkin istatistiklerini döndürür.
+Returns statistics for a short link.
 
-**Başarılı yanıt (200):**
+**Success response (200):**
 
 ```json
 {
-  "url": "https://ornek.com/cok-uzun-bir-sayfa",
+  "url": "https://example.com/some-page",
   "clicks": 42,
   "created_at": "2026-06-21 12:00:00"
 }
 ```
 
-**Hata yanıtları:**
+**Error responses:**
 
-| Durum | Açıklama        |
-| ----- | --------------- |
-| 404   | Kod bulunamadı  |
+| Status | Description      |
+| ------ | ---------------- |
+| 404    | Code not found   |
 
 ---
 
 ### GET `/api/links`
 
-Tüm kısa linkleri liste halinde döndürür (en yeni en üstte).
+Returns all short links (newest first).
 
-**Başarılı yanıt (200):**
+**Success response (200):**
 
 ```json
 [
   {
     "code": "abc1234",
-    "url": "https://ornek.com/sayfa",
+    "url": "https://example.com/page",
     "clicks": 10,
     "created_at": "2026-06-21 12:00:00"
   }
@@ -125,41 +125,41 @@ Tüm kısa linkleri liste halinde döndürür (en yeni en üstte).
 ## Docker
 
 ```bash
-# İmajı oluşturun
-docker build -t link-kisaltici .
+# Build the image
+docker build -t url-shortener .
 
-# Konteynerı çalıştırın
-docker run -d -p 3000:3000 -v link-data:/app/data link-kisaltici
+# Run the container
+docker run -d -p 3000:3000 -v link-data:/app/data url-shortener
 ```
 
-## Ortam Değişkenleri
+## Environment Variables
 
-| Değişken | Varsayılan | Açıklama    |
-| -------- | ---------- | ----------- |
-| `PORT`   | `3000`     | Sunucu portu |
+| Variable | Default | Description     |
+| -------- | ------- | --------------- |
+| `PORT`   | `3000`  | Server port     |
 
-## Geliştirme
+## Development
 
-Testler [Vitest](https://vitest.dev/) ve [Supertest](https://github.com/ladjs/supertest) ile yazılmıştır.
+Tests are written with [Vitest](https://vitest.dev/) and [Supertest](https://github.com/ladjs/supertest).
 
 ```bash
-# Testleri çalıştır
+# Run tests
 npm test
 
-# Testleri izleme modunda çalıştır
+# Run tests in watch mode
 npm run test:watch
 ```
 
-## Proje Yapısı
+## Project Structure
 
 ```
 link-kisaltici/
-├── data/               # SQLite veritabanı dosyası (çalışma zamanında oluşur)
+├── data/               # SQLite database file (created at runtime)
 ├── public/
-│   └── index.html      # Web arayüzü
+│   └── index.html      # Web UI
 ├── src/
-│   ├── server.js       # Sunucu ve API mantığı
-│   └── server.test.js  # Birim testleri
+│   ├── server.js       # Server and API logic
+│   └── server.test.js  # Tests
 ├── Dockerfile
 ├── .dockerignore
 ├── package.json
