@@ -52,6 +52,7 @@ function saveDb() {
   fs.writeFileSync(DB_PATH, buffer);
 }
 
+app.enable('trust proxy');
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
