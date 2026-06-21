@@ -20,7 +20,7 @@ describe('URL Shortener API', () => {
     expect(res.status).toBe(201)
     expect(res.body).toHaveProperty('shortUrl')
     expect(res.body).toHaveProperty('code')
-    expect(res.body.shortUrl).toMatch(/http:\/\/localhost:3000\//)
+    expect(res.body.shortUrl).toMatch(/\/[a-zA-Z0-9_-]{7}$/)
 
     createdCode = res.body.code
   })

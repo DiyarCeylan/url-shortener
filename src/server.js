@@ -80,7 +80,7 @@ app.post('/api/shorten', (req, res) => {
     db.run('INSERT INTO urls (code, url) VALUES (?, ?)', [code, trimmedUrl]);
     saveDb();
 
-    const shortUrl = `http://localhost:${PORT}/${code}`;
+    const shortUrl = `${req.protocol}://${req.get('host')}/${code}`;
 
     return res.status(201).json({ shortUrl, code });
   } catch (err) {
