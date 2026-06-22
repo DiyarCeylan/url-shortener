@@ -1,153 +1,108 @@
-# 🔗 URL Shortener
+# URL Shortener
+
+[![MIT](https://img.shields.io/badge/license-MIT-teal)](LICENSE)
 
 A lightweight URL shortening service built with Express.js and SQLite (sql.js). Converts long URLs into short codes, tracks click statistics, and provides a web interface for management.
+
+> **Live site:** [url-shortener-production-f970.up.railway.app](https://url-shortener-production-f970.up.railway.app)
+
+## Quick Start
+
+```bash
+git clone https://github.com/DiyarCeylan/link-kisaltici.git
+cd link-kisaltici
+npm install
+npm start
+```
+
+Server runs at **http://localhost:3000**.
 
 ## Features
 
 - Shorten long URLs with 7-character unique codes
 - Automatic 301 redirects
-- Click tracking
+- Click tracking per link
 - List all shortened links
 - Dark-themed, mobile-friendly web UI
 - One-click copy
 - Persistent SQLite storage
 - RESTful API
 
-## Built With
-
-| Technology   | Description                   |
-| ------------ | ----------------------------- |
-| Node.js      | Runtime environment           |
-| Express.js   | Web framework                 |
-| SQLite       | Embedded database (sql.js)    |
-| sql.js       | JavaScript port of SQLite     |
-| Vitest       | Test framework                |
-| Supertest    | HTTP test helper              |
-
-## Setup
-
-```bash
-# Install dependencies
-npm install
-
-# Start the server
-npm start
-```
-
-Server runs at **http://localhost:3000** by default.
-
-## Usage
-
-Open `http://localhost:3000` in your browser. Paste a long URL into the input field and click "Shorten". Copy and share the generated short link.
-
-## API Documentation
+## API
 
 ### POST `/api/shorten`
 
-Creates a new short link.
-
-**Request:**
-
 ```json
-{
-  "url": "https://example.com/some-long-page"
-}
+// Request
+{ "url": "https://example.com/some-long-page" }
+
+// Response (201)
+{ "shortUrl": "https://url-shortener-production-f970.up.railway.app/abc1234", "code": "abc1234" }
 ```
 
-**Success response (201):**
-
-```json
-{
-  "shortUrl": "https://url-shortener-production-f970.up.railway.app/abc1234",
-  "code": "abc1234"
-}
-```
-
-**Error responses:**
-
-| Status | Description              |
-| ------ | ------------------------ |
-| 400    | Invalid or missing URL   |
-| 500    | Internal server error    |
-
----
+| Status | Description |
+| ------ | ----------- |
+| 201    | Short link created |
+| 400    | Invalid or missing URL |
+| 500    | Internal server error |
 
 ### GET `/:code`
 
-Redirects a short code to the original URL.
-
-| Status | Description         |
-| ------ | ------------------- |
-| 301    | Successful redirect |
-| 404    | Code not found      |
-
----
+| Status | Description |
+| ------ | ----------- |
+| 301    | Redirects to original URL |
+| 404    | Code not found |
 
 ### GET `/api/stats/:code`
 
-Returns statistics for a short link.
-
-**Success response (200):**
-
 ```json
-{
-  "url": "https://example.com/some-page",
-  "clicks": 42,
-  "created_at": "2026-06-21 12:00:00"
-}
+// Response (200)
+{ "url": "https://example.com/some-page", "clicks": 42, "created_at": "2026-06-21 12:00:00" }
 ```
 
-**Error responses:**
-
-| Status | Description      |
-| ------ | ---------------- |
-| 404    | Code not found   |
-
----
+| Status | Description |
+| ------ | ----------- |
+| 200    | Stats returned |
+| 404    | Code not found |
 
 ### GET `/api/links`
 
-Returns all short links (newest first).
-
-**Success response (200):**
-
 ```json
+// Response (200)
 [
-  {
-    "code": "abc1234",
-    "url": "https://example.com/page",
-    "clicks": 10,
-    "created_at": "2026-06-21 12:00:00"
-  }
+  { "code": "abc1234", "url": "https://example.com/page", "clicks": 10, "created_at": "2026-06-21 12:00:00" }
 ]
 ```
 
 ## Docker
 
 ```bash
-# Build the image
 docker build -t url-shortener .
-
-# Run the container
 docker run -d -p 3000:3000 -v link-data:/app/data url-shortener
 ```
 
 ## Environment Variables
 
-| Variable | Default | Description     |
-| -------- | ------- | --------------- |
-| `PORT`   | `3000`  | Server port     |
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `PORT`   | `3000`  | Server port |
+
+## Tech Stack
+
+| Technology | Description |
+| ---------- | ----------- |
+| Node.js | Runtime environment |
+| Express.js | Web framework |
+| SQLite | Embedded database (sql.js) |
+| sql.js | JavaScript port of SQLite |
+| Vitest | Test framework |
+| Supertest | HTTP test helper |
 
 ## Development
 
-Tests are written with [Vitest](https://vitest.dev/) and [Supertest](https://github.com/ladjs/supertest).
-
 ```bash
-# Run tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
+npm test          # Run tests
+npm run test:watch # Watch mode
 ```
 
 ## Project Structure
