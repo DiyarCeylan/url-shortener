@@ -58,7 +58,7 @@ Creates a new short link.
 
 ```json
 {
-  "shortUrl": "http://localhost:3000/abc1234",
+  "shortUrl": "https://url-shortener-production-f970.up.railway.app/abc1234",
   "code": "abc1234"
 }
 ```
