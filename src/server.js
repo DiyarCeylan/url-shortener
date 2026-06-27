@@ -69,6 +69,14 @@ function saveDb() {
 
 app.enable('trust proxy');
 app.use(express.json());
+
+// Serve index.html with dynamic canonical/OG URLs based on the actual host
+const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf-8');
+app.get('/', (req, res) => {
+  const base = `${req.protocol}://${req.get('host')}`;
+  res.type('html').send(indexHtml.replace(/https:\/\/url-shortener-production-f970\.up\.railway\.app/g, base));
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/privacy', (req, res) => {
