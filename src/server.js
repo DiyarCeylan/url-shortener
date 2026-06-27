@@ -56,9 +56,29 @@ app.enable('trust proxy');
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+app.get('/privacy', (req, res) => {
+  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Privacy Policy — URL Shortener</title><meta name="robots" content="noindex,follow"><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;max-width:700px;margin:0 auto;padding:40px 20px;line-height:1.7}h1{font-size:28px;margin-bottom:8px}h2{font-size:18px;margin-top:32px;margin-bottom:8px}p{color:#8b949e}a{color:#58a6ff}</style></head><body><h1>Privacy Policy</h1><p>Last updated: June 2026</p><h2>What we collect</h2><p>We store the original URL, a randomly generated short code, and a click counter. We do not collect IP addresses, browser fingerprints, or any personal information.</p><h2>Analytics</h2><p>We use GoatCounter, a privacy-focused analytics service. GoatCounter does not use cookies and does not track individual users across sessions.</p><h2>Data deletion</h2><p>You can request deletion of any link by contacting us. Data may be retained in backups for up to 30 days.</p><h2>Contact</h2><p>Open an issue on <a href="https://github.com/DiyarCeylan/url-shortener">GitHub</a>.</p><p style="margin-top:40px"><a href="/">← Back to URL Shortener</a></p></body></html>`);
+});
+
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send(`User-agent: *
+Allow: /
+Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml
+`);
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  const host = `${req.protocol}://${req.get('host')}`;
+  res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${host}/</loc><priority>1.0</priority></url>
+</urlset>
+`);
+});
+
 app.post('/api/shorten', (req, res) => {
   try {
-    const { url } = req.body;
+    const { url, code: customCode } = req.body;
 
     if (!url || typeof url !== 'string' || url.trim().length === 0) {
       return res.status(400).json({ error: 'URL is required' });
@@ -76,7 +96,23 @@ app.post('/api/shorten', (req, res) => {
       return res.status(400).json({ error: 'Only http and https URLs are allowed' });
     }
 
-    const code = generateShortCode();
+    let code;
+    if (customCode && typeof customCode === 'string') {
+      const slug = customCode.trim();
+      if (!/^[a-zA-Z0-9_-]{3,32}$/.test(slug)) {
+        return res.status(400).json({ error: 'Custom code must be 3-32 characters (letters, numbers, -, _)' });
+      }
+      const existing = db.prepare('SELECT code FROM urls WHERE code = ?');
+      existing.bind([slug]);
+      if (existing.step()) {
+        existing.free();
+        return res.status(409).json({ error: 'This custom code is already taken' });
+      }
+      existing.free();
+      code = slug;
+    } else {
+      code = generateShortCode();
+    }
 
     db.run('INSERT INTO urls (code, url) VALUES (?, ?)', [code, trimmedUrl]);
     saveDb();
@@ -94,11 +130,18 @@ app.get('/:code', (req, res) => {
   try {
     const { code } = req.params;
 
+    // Skip API routes that might be caught as codes
+    if (code === 'api') return res.status(404).json({ error: 'Not found' });
+
     const stmt = db.prepare('SELECT url, clicks FROM urls WHERE code = ?');
     stmt.bind([code]);
     if (!stmt.step()) {
       stmt.free();
-      return res.status(404).json({ error: 'Link not found' });
+      const wantsJson = req.accepts(['json', 'html']) === 'json';
+      if (wantsJson) {
+        return res.status(404).json({ error: 'Link not found' });
+      }
+      return res.status(404).send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Link Not Found — URL Shortener</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:24px}h1{font-size:4rem;margin:0;color:#8b949e}p{margin:8px 0 24px;color:#8b949e}a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><h1>404</h1><p>This link doesn't exist or has been removed.</p><p><a href="/">Create a short link →</a></p></body></html>`);
     }
 
     const row = stmt.getAsObject();
@@ -106,6 +149,12 @@ app.get('/:code', (req, res) => {
 
     db.run('UPDATE urls SET clicks = clicks + 1 WHERE code = ?', [code]);
     saveDb();
+
+    const wantsJson = req.accepts(['json', 'html']) === 'json';
+    if (!wantsJson) {
+      res.redirect(301, row.url);
+      return res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=${row.url.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Redirecting...</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:24px}p{color:#8b949e}a{color:#58a6ff}</style></head><body><p>Redirecting to <a href="${row.url.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">${row.url.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}</a></p></body></html>`);
+    }
 
     return res.redirect(301, row.url);
   } catch (err) {
@@ -135,6 +184,19 @@ app.get('/api/stats/:code', (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching stats:', err.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/stats/summary', (req, res) => {
+  try {
+    const stmt = db.prepare('SELECT COUNT(*) as total_links, SUM(clicks) as total_clicks FROM urls');
+    stmt.step();
+    const row = stmt.getAsObject();
+    stmt.free();
+    return res.json({ total_links: row.total_links, total_clicks: row.total_clicks || 0 });
+  } catch (err) {
+    console.error('Error fetching stats summary:', err.message);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -11,14 +11,27 @@
 <link rel="icon" href="favicon-48.png" sizes="48x48" type="image/png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="favicon-192.png" sizes="192x192">
-<meta property="og:title" content="URL Shortener">
+<meta property="og:title" content="URL Shortener — Shorten Links, Track Clicks">
 <meta property="og:description" content="Free URL shortener. Shorten long URLs, track click counts, and manage your links.">
+<meta property="og:url" content="https://url-shorterer.vercel.app/">
+<meta property="og:site_name" content="URL Shortener">
 <meta property="og:image" content="https://url-shorterer.vercel.app/favicon-512.png">
 <meta property="og:image:width" content="512">
 <meta property="og:image:height" content="512">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="URL Shortener">
+<meta name="twitter:description" content="Free URL shortener. Shorten long URLs, track click counts, and manage your links. Simple, fast, and privacy-friendly.">
+<meta name="twitter:image" content="https://url-shorterer.vercel.app/favicon-512.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"URL Shortener","url":"https://url-shorterer.vercel.app/","applicationCategory":"UtilitiesApplication","operatingSystem":"All","browserRequirements":"JavaScript","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free URL shortener. Shorten long URLs, track click counts, and manage your links."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"URL Shortener","url":"https://url-shorterer.vercel.app/","applicationCategory":"UtilitiesApplication","operatingSystem":"All","browserRequirements":"JavaScript","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
 <script data-goatcounter="https://url-shorterer.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -267,7 +280,8 @@
 <div class="container">
   <header>
     <h1>🔗 <span>URL</span> Shortener</h1>
-    <p>Shorten long URLs, track your links</p>
+    <p>Paste a long URL, get a short link. Track every click.</p>
+    <p style="font-size:13px;color:var(--muted);margin-top:4px;">100% free • No sign-up • No tracking</p>
   </header>
 
   <div class="card">
@@ -284,6 +298,15 @@
 </div>
 
 <div id="toast" class="toast">Copied!</div>
+
+<footer style="margin-top:40px;padding:20px;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--border);">
+  <p>URL Shortener — Free &amp; open source</p>
+  <p style="margin-top:4px;">
+    <a href="/privacy" style="color:var(--accent);text-decoration:none;">Privacy</a>
+    —
+    <a href="https://github.com/DiyarCeylan/url-shortener" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">GitHub</a>
+  </p>
+</footer>
 
 <script>
 (function() {
@@ -360,7 +383,7 @@
         <div class="empty-state">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           <h3>No links yet</h3>
-          <p>Paste a URL above and start shortening.</p>
+          <p>Paste a long URL above and get a shortened link instantly.</p>
         </div>`;
       return;
     }
@@ -402,6 +425,23 @@
     contentArea.querySelectorAll('.copy-btn').forEach(btn => {
       btn.addEventListener('click', () => copyToClipboard(btn.dataset.url, btn));
     });
+  }
+
+  async function fetchStats() {
+    try {
+      const res = await fetch(BASE + '/api/stats/summary');
+      if (res.ok) {
+        const data = await res.json();
+        const existing = document.querySelector('.stats-bar');
+        if (!existing && data.total_links > 0) {
+          const bar = document.createElement('div');
+          bar.className = 'stats-bar';
+          bar.style.cssText = 'display:flex;gap:24px;justify-content:center;margin-bottom:24px;font-size:14px;';
+          bar.innerHTML = `<span style="color:var(--muted);">📊 <strong style="color:var(--text);">${data.total_links}</strong> links · <strong style="color:var(--text);">${data.total_clicks}</strong> total clicks</span>`;
+          document.querySelector('.card').after(bar);
+        }
+      }
+    } catch {}
   }
 
   async function fetchLinks() {
@@ -461,6 +501,7 @@
   });
 
   fetchLinks();
+  fetchStats();
 })();
 </script>
 </body>
