@@ -4,7 +4,7 @@
 
 A lightweight URL shortening service built with Express.js and SQLite (sql.js). Converts long URLs into short codes, tracks click statistics, and provides a web interface for management.
 
-> **Live site:** [url-shortener-production-f970.up.railway.app](https://url-shortener-production-f970.up.railway.app)
+> **Live site:** [s.whetkit.me](https://s.whetkit.me/)
 
 ## Quick Start
 
@@ -37,7 +37,7 @@ Server runs at **http://localhost:3000**.
 { "url": "https://example.com/some-long-page" }
 
 // Response (201)
-{ "shortUrl": "https://url-shortener-production-f970.up.railway.app/abc1234", "code": "abc1234" }
+{ "shortUrl": "https://s.whetkit.me/abc1234", "code": "abc1234" }
 ```
 
 | Status | Description |
