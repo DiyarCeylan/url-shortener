@@ -4,18 +4,7 @@
     {
       "src": "api/**/*.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
     }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/privacy", "dest": "/api/privacy.js" },
-    { "src": "/robots.txt", "dest": "/api/robots.js" },
-    { "src": "/sitemap.xml", "dest": "/api/sitemap.js" },
-    { "src": "/(favicon\\.svg|google4505ca1a3a4868b3\\.html)", "dest": "/public/$1" },
-    { "src": "/(.*)", "dest": "/public/index.html" }
-  ]
+  "outputDirectory": "public"
 }
