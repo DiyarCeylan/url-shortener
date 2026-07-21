@@ -8,16 +8,21 @@
     {
       "src": "redirect/**/*.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
-  "outputDirectory": "public",
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/privacy", "dest": "/api/privacy.js" },
     { "src": "/robots.txt", "dest": "/api/robots.js" },
     { "src": "/sitemap.xml", "dest": "/api/sitemap.js" },
     { "src": "/redirect/(.*)", "dest": "/redirect/$1" },
-    { "src": "/(favicon\\.svg|google4505ca1a3a4868b3\\.html)", "dest": "/public/$1" },
-    { "src": "/((?!api|redirect|privacy|robots|sitemap|favicon|google)[^/]+)", "dest": "/redirect/[code].js" }
+    { "src": "/favicon.svg", "dest": "/public/favicon.svg" },
+    { "src": "/google4505ca1a3a4868b3.html", "dest": "/public/google4505ca1a3a4868b3.html" },
+    { "src": "/((?!api|redirect|privacy|robots|sitemap|favicon|google)[^/]+)", "dest": "/redirect/[code].js" },
+    { "src": "/", "dest": "/public/index.html" }
   ]
 }
