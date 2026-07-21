@@ -1,28 +1,12 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "redirect/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/privacy", "dest": "/api/privacy.js" },
-    { "src": "/robots.txt", "dest": "/api/robots.js" },
-    { "src": "/sitemap.xml", "dest": "/api/sitemap.js" },
-    { "src": "/redirect/(.*)", "dest": "/redirect/$1" },
-    { "src": "/favicon.svg", "dest": "/public/favicon.svg" },
-    { "src": "/google4505ca1a3a4868b3.html", "dest": "/public/google4505ca1a3a4868b3.html" },
-    { "src": "/((?!api|redirect|privacy|robots|sitemap|favicon|google)[^/]+)", "dest": "/redirect/[code].js" },
-    { "src": "/", "dest": "/public/index.html" }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/privacy", "destination": "/api/privacy.js" },
+    { "source": "/robots.txt", "destination": "/api/robots.js" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap.js" },
+    { "source": "/favicon.svg", "destination": "/public/favicon.svg" },
+    { "source": "/google4505ca1a3a4868b3.html", "destination": "/public/google4505ca1a3a4868b3.html" },
+    { "source": "/((?!api|privacy|robots|sitemap|favicon|google)[^/]+)", "destination": "/redirect/[code].js" }
   ]
 }
